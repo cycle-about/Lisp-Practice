@@ -109,8 +109,6 @@
 (define lat '("ice" "cream" "with" "fudge" "for" "dessert"))   ; (ice cream with topping fudge for dessert)
 (displayln (insertL-2 new old lat))
 
-|#
-
 (define subst-1
 	(lambda (new old lat)
 		(cond
@@ -133,7 +131,6 @@
 			((null? lat) (displayln '() ))
 			(else (cond
 				((or (eq? (car lat) o1) (eq? (car lat) o1)) (cons new (cdr lat)))   ; if car lat equals o1 or o2, cons new onto cdr lat
-				
 				(else (cons (car lat) (subst-2 new o1 o2 (cdr lat))))
 			))
 		)
@@ -147,3 +144,74 @@
 (displayln (subst-1 new o2 lat)) 							; (vanilla ice cream with chocolate topping)
 (displayln (subst-2 new o1 o2 lat))  					; (banana ice cream with vanilla topping)      * subst-2 found the 'end' value first
 ; it finds the END value first
+
+(define multirember
+	(lambda (a lat)
+		(cond
+			((null? lat) displayln '() )
+			(else
+				(cond
+					((eq? (car lat) a) (multirember a (cdr lat))) 			; if first item of lat equals a: call func on remainder of list (remove item)
+					(else (cons (car lat) (multirember a (cdr lat)))) 	; if not: 'keep' that first item, and call func on remainder of list
+				)
+			)
+		)
+	)
+)
+
+(displayln (multirember "cup" '("coffee" "cup" "tea" "cup" "hick" "cup") )) 		; (coffee tea hick)
+
+(define multiinsertR
+	(lambda (new old lat)
+		(cond
+			((null? lat) displayln '() )
+			(else
+				(cond
+					((eq? (car lat) old) (cons (car lat) (cons new (multiinsertR new old (cdr lat)))))
+					(else (cons (car lat) (multiinsertR new old (cdr lat))))
+				)
+			)
+		)
+	)
+)
+
+; if first item in lat equals old: store first item, store new, then call func on old new and remainder of list
+; if not: store first item, call func on same thing as true case
+
+(displayln (multiinsertR "fried" "fish" '("chips" "and" "fish" "or" "fish" "and" "fried") ))
+	; (chips and fish fried or fish fried and fried)
+
+(define multiinsertL
+	(lambda (new old lat)
+		(cond
+			((null? lat) displayln '() )
+			(else
+				(cond
+					((eq? (car lat) old) (cons new (cons old (multiinsertL new old (cdr lat)))))
+					(else (cons (car lat) (multiinsertL new old (cdr lat))))
+				)
+			)
+		)
+	)
+)
+
+(displayln (multiinsertL "fried" "fish" '("chips" "and" "fish" "or" "fish" "and" "fried") ))
+	; (chips and fried fish or fried fish and fried)
+
+|#
+
+(define multisubst
+	(lambda (new old lat)
+		(cond
+			((null? lat) displayln '() )
+			(else
+				(cond
+					((eq? (car lat) old) (cons new (multisubst new old (cdr lat))))
+					(else (cons (car lat) (multisubst new old (cdr lat))))
+				)
+			)
+		)
+	)
+)
+
+(displayln (multisubst "hi" "hello" '("hello" "world") ))
