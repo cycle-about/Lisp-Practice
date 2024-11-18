@@ -1,6 +1,6 @@
 #lang racket
 
-; Chapter 1. Toys
+;;; Chapter 1. Toys
 
 #|
 (define my-list '(1 "two" 3.0 #t))

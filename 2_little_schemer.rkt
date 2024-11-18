@@ -1,6 +1,6 @@
 #lang racket
 
-; Chapter 2. Do it, do it again, and again, and again...
+;;; Chapter 2. Do it, do it again, and again, and again...
 
 ; chatgpt version of 'lat?' (list of atoms)
 ;(define (lat? lst)

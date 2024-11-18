@@ -1,8 +1,7 @@
 #lang racket
 
-; Chapter 3. Cons the Magnificent
+;;; Chapter 3. Cons the Magnificent
 
-#|
 
 ; version that removes matching word and everything before it
 (define rember-1
@@ -104,10 +103,10 @@
 	)
 )
 
-(define new "topping")
-(define old "fudge")
-(define lat '("ice" "cream" "with" "fudge" "for" "dessert"))   ; (ice cream with topping fudge for dessert)
-(displayln (insertL-2 new old lat))
+(define new_2 "topping")
+(define old_2 "fudge")
+(define lat_2 '("ice" "cream" "with" "fudge" "for" "dessert"))   ; (ice cream with topping fudge for dessert)
+(displayln (insertL-2 new_2 old_2 lat_2))
 
 (define subst-1
 	(lambda (new old lat)
@@ -137,12 +136,12 @@
 	)
 )
 
-(define new "vanilla")
+(define new_3 "vanilla")
 (define o1 "chocolate")
 (define o2 "banana")
-(define lat '("banana" "ice" "cream" "with" "chocolate" "topping"))
-(displayln (subst-1 new o2 lat)) 							; (vanilla ice cream with chocolate topping)
-(displayln (subst-2 new o1 o2 lat))  					; (banana ice cream with vanilla topping)      * subst-2 found the 'end' value first
+(define lat_3 '("banana" "ice" "cream" "with" "chocolate" "topping"))
+(displayln (subst-1 new_3 o2 lat_3)) 							; (vanilla ice cream with chocolate topping)
+(displayln (subst-2 new_3 o1 o2 lat_3))  					; (banana ice cream with vanilla topping)      * subst-2 found the 'end' value first
 ; it finds the END value first
 
 (define multirember
@@ -198,7 +197,6 @@
 (displayln (multiinsertL "fried" "fish" '("chips" "and" "fish" "or" "fish" "and" "fried") ))
 	; (chips and fried fish or fried fish and fried)
 
-|#
 
 (define multisubst
 	(lambda (new old lat)

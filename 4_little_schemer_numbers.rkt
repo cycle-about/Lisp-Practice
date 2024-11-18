@@ -1,6 +1,6 @@
 #lang racket
 
-; Chapter 4. Number Games
+;;; Chapter 4. Number Games
 
 
 (define addition
@@ -50,13 +50,13 @@
 (define addtups1
 	(lambda (tup1 tup2)
 		(cond 
-			((and (null? tup1) (null? tup2)) displayln '() )
+			((and (null? tup1) (null? tup2)) '() )
 			(else (cons (addition (car tup1) (car tup2)) (addtups1 (cdr tup1) (cdr tup2))))
 		)
 	)
 )
 
-; (displayln (addtups1 '(2 4 6) '(3 5 7) ))
+(displayln (addtups1 '(2 4 6) '(3 5 7) ))
 ; error message if try to input tuples of different lengths
 ;     "car: contract violation. expected: pair? given: '()"
 
@@ -179,7 +179,7 @@
 (define no-nums
 	(lambda (lat)
 		(cond
-			((null? lat) (displayln '("list is null") ))
+			((null? lat) '() )
 			; ((null? lat) ())  														; "missing procedure expression", can't pass an actual empty expression for the 'do nothing' case
 			(else (cond
 				((number? (car lat)) (no-nums (cdr lat)))
@@ -192,16 +192,16 @@
 ; (displayln (no-nums '("hello" 3 "world" 7 "!" 4 "6") ))  			; (list is null) (hello world ! 6 . #<void>)
 ; (displayln (no-nums '("hello" "world") )) 										; (list is null) (hello world . #<void>)
 ; example inputs from book
-; (displayln (no-nums '(5 "pears" 6 "prunes" 9 "dates") )) 				; still hits empty list
-; (displayln (no-nums '(5 6 9 ) )) 																; only numbers: still hits empty list
+(displayln (no-nums '(5 "pears" 6 "prunes" 9 "dates") )) 				; still hits empty list
+(displayln (no-nums '(5 6 9 ) )) 																; only numbers: still hits empty list
 ; (displayln (no-nums '(5 6 9 "hi" "bye") )) 											; has string but ends with number: still hits empty list
-; ???? this seems to always hit the empty list, unlike other example functions
+; ???? this seems to always hit the empty list, unlike other example functions: also fixed, seems was because of cons the statement
 
 
 (define all-nums
 	(lambda (lat)
 		(cond
-			((null? lat) (displayln '() ))
+			((null? lat) '() )
 			(else
 				(cond
 					((number? (car lat)) (cons (car lat) (all-nums (cdr lat))))
@@ -212,9 +212,9 @@
 	)
 )
 
-; (displayln (all-nums '("hello" 3 "world" 7 "!" 4 "6") ))  			; () (3 7 4 . #<void>)
-; (displayln (all-nums '("hello" "world") )) 											; () #<void>
-; ???? this one also always hits the empty list clause
+(displayln (all-nums '("hello" 3 "world" 7 "!" 4 "6") ))  			; () (3 7 4 . #<void>)
+(displayln (all-nums '("hello" "world") )) 											; () #<void>
+; ???? this one also always hits the empty list clause -> fixed
 
 
 ; returns true or false depending on whether two atoms are the sam
@@ -249,7 +249,54 @@
 	)
 )
 
-(displayln (occur "hi" '("hi" "bye" 3 "hi" 1) )) 	; 2
-(displayln (occur 3 '("hi" "bye" 3 "hi" 1) )) 		; 1
-(displayln (occur "" '("" "hi" 3) )) 							; 1
+; (displayln (occur "hi" '("hi" "bye" 3 "hi" 1) )) 	; 2
+; (displayln (occur 3 '("hi" "bye" 3 "hi" 1) )) 		; 1
+; (displayln (occur "" '("" "hi" 3) )) 							; 1
 
+(define one?_v1
+	(lambda (n)
+		(cond
+			((zero? n) #f)
+			(else (zero? (sub1 n)))
+		)
+	)
+)
+
+; (displayln (one?_v1 1))
+; (displayln (one?_v1 3))
+
+(define one?_v2
+	(lambda (n)
+		(cond
+			(else (= n 1))
+		)
+	)
+)
+
+; (one?_v2 1)  ; does not print anything
+; (displayln (one?_v2 1))  ; #t
+; (displayln (one?_v2 3))  ; #f
+
+(define one?_v3
+	(lambda (n)
+		(= n 1)
+	)
+)
+
+; (displayln (one?_v3 1))  ; #t
+; (displayln (one?_v3 -3))  ; #f
+; (displayln (one?_v3 a))  ; error unbound identifier
+; (displayln (one?_v3 "a"))  ; contract violation, expected number
+; (displayln (one?_v3 0)) #f
+
+; remove the nth item from a lat, using one? instead of zero? as in the earlier implementation
+(define rempick_one
+	(lambda (n lat)
+		(cond
+			((one?_v3 n) (cdr lat))  ; if n is 1: discard car of lat, return cdr of lat
+			(else (cons (car lat) (rempick_one (sub1 n) (cdr lat))))  ; keep car of lat, sub1 from counter, call rempick on cdr lat
+		)
+	)
+)
+
+(displayln (rempick_one 3 '("lemon" "meringue" "salty" "pie") ))  ; (lemon meringue pie)
