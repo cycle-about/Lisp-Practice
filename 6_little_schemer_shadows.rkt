@@ -3,8 +3,10 @@
 ;;; Chapter 6. Shadows
 
 ; arithmetic expression: either a number, or two arithmetic expressions combined by +, x, or ^
+; note: racket does NOT include an operator for exponent (eg ^), only function 'expt'
+;     so not sure if the functions 'numbered?' will work as intended
 
-;; 1. tests with arithmetic expressions
+;; Tests with arithmetic expressions in racket
 
 ;; prefix expression value: can assign to a variable
 ; (define x 3) 								; 3
@@ -24,30 +26,27 @@
 ; (define x ((3 + 4) * 2) ) 	; application: not a procedure; expected a procedure that can be applied to arguments
 ; (displayln x)
 
+; infix expression value without parens: bad syntax
+; (define x 3 + 1) 							; bad syntax (multiple expressions after identifier)
+
 ; infix expressions representation: can assign to a variable
 ; (define x '(3 + 1)) 				; (3 + 1)
 ; (define x '((3 + 4) * 2) ) 	; ((3 + 4) * 2)
 ; (displayln x)
 
 
-; 2. using those expressions in function
+;; function_2
+;; doing before function_1 since it's the simplified version
 
-; from chatgpt, book does not define this
 ; define the atom? function
 (define (atom? x)
 	(not (list? x)))
 
-;; function_2
 ; simplification of how to determine if an arithmetic expression contains only numbers, +, *, or ^
 ; presumes that input is an arithmetic expression
+; note: Racket does not have operator for exponent, so this might not do what's intended
 
-; questions
-; ? should this return false if there are atoms that are not numbers, or what is it actually checking?
-;     - returns false if has a string instead of a number
-;     - still returns true if uses a non-operand character
-; // does it presume prefix or infix notation, and does it matter?
-; 		- seems to check for infix, returns false if given prefix
-
+#|
 (define numbered?
 	(lambda (aexp)
 		(cond
@@ -58,89 +57,52 @@
 	)
 )
 
-; prefix expression representation
-(define x1 '(* 2 (+ 3 4)) )
-(displayln (numbered? x1))  ; #f, prefix invalid
+;; Question 1. What does function_2 presume for prefix/infix and value/representation
+;    -> infix representation only
 
-; infix expression representation
-(define x2 '((3 + 4) * 2 ) )
-(displayln (numbered? x2))  ; #t, infix valid
+; prefix value: NOT valid input to numbered?
+(define x1 (+ 3 1))
+(printf "prefix value: ~a\n" x1) 							; 4
+(printf "numbered?: ~a\n\n" (numbered? x1)) 	; #t  -> this runs the function on 4, so does NOT check what's intended
 
-; infix expression representation with non-number
-(define x3 '((3 + 4) * "hi" ) )
-(displayln (numbered? x3))  ; #f, string instead of number invalid
+; prefix representation: NOT valid input to numbered?
+(define x2 '(+ 3 1))
+(printf "prefix representation: ~a\n" x2) 		; (+ 3 1)
+(printf "numbered?: ~a\n\n" (numbered? x2))  	; #f -> function does not see this as valid
 
-; infix expression representation with non-operand
-(define x4 '((3 + 4) @ 2 ) )
-(displayln (numbered? x4))  ; #t, non-operand character valid
+; infix value: cannot be evaluated by Racket, so not valid for numbered?
 
+; infix representation: valid input
+(define x4 '(3 + 4) )
+(printf "infix representation: ~a\n" x4) 			; (3 + 4)
+(printf "numbered?: ~a\n\n" (numbered? x4)) 	; #t
 
-;; function 1
-; return to this first implification after figuring out how simplified version runs
-
-
-
-#|
-;; function 1_1
-; debugging version to figure out syntax
-; might be this is not working because is infix notation, not prefix as required by racket (eg "(car (cdr aexp))")
-; ??? implementation in book seems to leave out the else case to return false, so returned void
-; in racket, there is not a built-in operator for exponent like ^, only 'expt', so needs to be called with prefix notation
-;   -> omitting from this function for now
-; determines whether a representation of arithmetic expression contains only numbers or +
-(define numbered_1?
-	(lambda (aexp)
-		(cond
-			((atom? aexp) (number? aexp))
-			((eq? (car (cdr aexp)) '(+)  ) (and (numbered_1? (car aexp)) (numbered_1? (car (cdr (cdr aexp))))))
-			(else #f)  ; book left this out, so hit void instead
-		)
-	)
-)
-
-(define y 3)
-(printf "y: ~a\n" y)
-(printf "numbered_1? y: ~a\n\n" (numbered_1? y))  ; #t
-
-(define x '(+ 3 4) )
-(printf "x: ~a\n" x)
-(printf "numbered_1? x: ~a\n\n" (numbered_1? x))  ; #f
-
-;; function 1_2
-; try adjusting to account for prefix notation
-; in racket, there is not a built-in operator for exponent like ^, only 'expt', so needs to be called with prefix notation
-;   -> omitting from this function for now
-; determines whether a representation of arithmetic expression contains only numbers or +
-(define numbered_2?
-	(lambda (aexp)
-		(cond
-			((atom? aexp) (number? aexp))
-			((eq? (car aexp) '(+)  ) (and (numbered_2? (car aexp)) (numbered_2? (car (cdr aexp)))))  ; if +, check if both car and car of cdr are true
-			; ((eq? (car aexp) '(+)  ) (and (numbered_2? (car aexp)) (numbered_2? (car (cdr (cdr aexp))))))  ; if +, check if both car and car of cdr are true
-			(else #f)  ; book left this out, so hit void instead
-		)
-	)
-)
-
-(define y 3)
-(printf "y: ~a\n" y)
-(printf "numbered_2? y: ~a\n\n" (numbered_2? y))  ; #t
-
-(define x '(+ 3 4) )
-(printf "x: ~a\n" x)
-(printf "numbered_2? x: ~a\n\n" (numbered_2? x))  ; #f
-
-; function_1 has too many irregularities between the book and racket, skipping
+(define x5 '((3 + 4) * 2 ) )
+(printf "infix representation: ~a\n" x5) 			; ((3 + 4) * 2)
+(printf "numbered?: ~a\n\n" (numbered? x5)) 	; #t
 
 
+;; Question 2. What operators and operands does function_2 check for?
+; 	-> Seems to allow anything, string, empty list, another number in between numerics
+;     but requires three or more atoms, with two or more numbers, and position of number matters
+;   -> This function does NOT evaluate whether something is actually a 'legal' arithmetic expression
+;     in person-facing infix notation
 
-
-(define y 3)
-(printf "y: ~a\n" y)
-(printf "numbered? y: ~a\n\n" (numbered? y))  ; #t
-
-(define x '(3 + 4) )
-(printf "x: ~a\n" x)
-(printf "numbered? x: ~a\n\n" (numbered? x))  ; #f
-
+; (define x6 '(3 $ 2 ))  		; #t
+; (define x6 '(3 @ 2 ))  		; #t
+; (define x6 '(3 b 2 )) 		; #t
+; (define x6 '(3 "b" 2)) 		; #t
+; (define x6 '(3 '() 2)) 		; #t
+; (define x6 '(3 1 2)) 			; #t
+; (define x6 '("hi")) 			; #false
+; (define x6 '(3 "hi")) 		; error contract violation expected pair? given '()
+; (define x6 '(3 2))				; error contract violation expected pair? given '()
+; (define x6 '(3))					; error contract violation expected pair? given '()
+; (define x6 '(3 2 1 4))		; #t
+; (define x6 '("hi" "bye" "hello"))				; #f
+; (define x6 '(3 "bye" "hello"))					; #f
+(define x6 '(3 2 "hello"))							; #f
+(displayln x6)
+(printf "numbered?: ~a\n\n" (numbered? x6)) 	; 
 |#
+
