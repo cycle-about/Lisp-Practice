@@ -378,6 +378,16 @@
 
 ;; FUNCTION 22
 ;; col stands for a collector, also called a continuation (page 138)
+; a is item to remove
+; lat is list to remove it from
+; col is the function that will handle the result
+; chat description of what it does:
+;   - traverse list lat
+;   - remove all occurrences of a from lat
+;   - collect all removed items into list 'seen'
+;   - passes both lists (lat and seen) to collector col
+;   - col then decides what to do with the lists, eg return them, print them, compare them
+; accumulator/collector passing style: each recursive call gets continuation (lambda) that says how to combine results
 (define multirember&co
 	(lambda (a lat col)
 		(cond
@@ -400,21 +410,22 @@
 
 ;; FUNCTION 23
 ;; accepts two arguments, returns whether the second is an empty list, ignores the first
+; chat answer about why it has two args, when it does not use the first: so all collector functions have the same signature, making them interchangeable when building on future examples
 (define a-friend
 	(lambda (x y)
 		(null? y)
 	)
 )
 
-
-(displayln "function 23")
-
+; 23a
 (define l6 '("strawberries" "tuna" "and" "swordfish") )  ; 'lat' on page 138
-(displayln (multirember&co a2 l6 a-friend))  ; #f
+; (displayln (multirember&co a2 l6 a-friend))  ; #f
 
-(displayln (multirember&co a2 '() a-friend))  ; #t, because a-friend immediately used in first answer on two empty lists
+; 23b
+; (displayln (multirember&co a2 '() a-friend))  ; #t, because a-friend immediately used in first answer on two empty lists
 
-(displayln (multirember&co a2 '("tuna") a-friend))  ; #f
+; 23c
+; (displayln (multirember&co a2 '("tuna") a-friend))  ; #f
 
 
 ;; FUNCTION 24
@@ -431,6 +442,72 @@
 	)
 )
 
-(displayln (new-friend1 lat24 '() ))  ; #f, because a-friend checks if the list is empty, and it's not empty
+; empty list passed as arg 'seen'
+; (displayln (new-friend1 lat24 '() ))  ; #f, because a-friend checks if the list is empty, and it's not empty
 
 
+;; FUNCTION 25
+; with 'tuna' hardcoded into definition, rather than coming from car on list
+(define new-friend2
+  (lambda (newlat seen)
+    (col24 newlat
+      (cons "tuna" seen )
+    )
+  )
+)
+
+; (displayln (new-friend2 lat24 '() ))
+
+;; FUNCTION 26
+; putting 'a-friend' in function, rather defined outside of it
+(define new-friend3
+  (lambda (newlat seen)
+    (a-friend newlat
+      (cons "tuna" seen)
+    )
+  )
+)
+
+; 26a
+; (displayln (new-friend3 lat24 '() )) ; #f, because list is not empty
+
+; 26b
+; (displayln (multirember&co "tuna" '("and" "tuna") a-friend)) ; #f, because "tuna" and the list ("and" "tuna") after tuna is removed from it are NOT equal
+
+;; variation to print the lists before returning the comparison
+(define a-friend-print
+  (lambda (x y)
+    (begin
+      (displayln x)   ; print first argument
+      (displayln y)   ; print second argument
+      (null? y))))    ; return original result
+
+; this is the evaluation to 'false' that is described at the top of 140, where it describes that by the time it reaches a-friend, ls1 is (and) ls2 is (tuna)
+; I got extremely turned around thinking those were the inputs to multirember, which returns #t
+; (displayln (multirember&co "tuna" '("and" "tuna") a-friend-print)) ; (and) (tuna) #f
+
+; check the col expression by itself, as described on 140
+; (displayln (a-friend '("and") '("tuna"))) ; #f, because second arg is not empty
+; (displayln (a-friend-print '("and") '("tuna"))) ; (and) (tuna) #f, because second arg is not empty, matches book
+
+;; FUNCTION 27
+; CAUTION: this is described next to 26b at bottom of 139 but is not used either in that evaluation or the next one on 140
+(define latest-friend
+  (lambda (newlat seen)
+  	(a-friend (cons "and" newlat) seen)
+  )
+)
+
+; 27a
+; is there a change calling latest-friend instead of a-friend?
+(displayln "27a")
+(displayln (multirember&co "tuna" '("and" "tuna") latest-friend)) ; #f, same as with a-friend
+
+;; FUNCTION 28
+(define last-friend
+	(lambda (x y )
+		(length x)
+	)
+)
+
+(displayln (multirember&co "tuna" '("strawberries" "tuna" "and" "swordfish") last-friend)) ; 3
