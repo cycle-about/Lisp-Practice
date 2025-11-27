@@ -86,7 +86,7 @@
 ; (displayln (rember-f1 t1 a1 l1))  ; (6 2 3)
 
 
-;; Curry-ing: a function that when passed an argument a, returns another function with a as its arg
+;; Curry-ing: a function that when passed an argument a, returns another function with a as its arg, and tests for whether they are equal
 
 ;; FUNCTION 2
 (define eq?-c
@@ -406,9 +406,10 @@
 	)
 )
 
-(define l6 '("strawberries" "tuna" "and" "swordfish") )
 
 (displayln "function 23")
+
+(define l6 '("strawberries" "tuna" "and" "swordfish") )  ; 'lat' on page 138
 (displayln (multirember&co a2 l6 a-friend))  ; #f
 
 (displayln (multirember&co a2 '() a-friend))  ; #t, because a-friend immediately used in first answer on two empty lists
@@ -417,28 +418,19 @@
 
 
 ;; FUNCTION 24
-;; ????? how is col not an arg?
+; col is not meant to be a parameter, it is a free variable bound in the caller's environment, not inside the function
+; new-friend1 is NOT a fully-defined function by itself, it is a closure template that only makes sense inside another function whre col is already defined
+; note on page 138 it describes calling multirember&co with col as 'a-friend', but in that function a-friend is passed as an arg, and I didn't assign it to a separate variable
+
+(define col24 a-friend) ; a-friend returns whether its second arg (a list) is empty
+(define lat24 '(tuna) ) ; must be a list, because car called on it
+
 (define new-friend1
 	(lambda (newlat seen)
-		(col newlat (cons (car lat) seen))
+		(col24 newlat (cons (car lat24) seen))
 	)
 )
 
+(displayln (new-friend1 lat24 '() ))  ; #f, because a-friend checks if the list is empty, and it's not empty
 
-;; FUNCTION 25
-;; with tuna written into the definition
-(define new-friend2
-	(lambda (newlat seen)
-		(col newlat (cons "tuna" seen))
-	)
-)
-
-
-;; FUNCTION 26
-;; with tuna and a-friend written into the definition
-(define new-friend3
-	(lambda (newlat seen)
-		(a-friend newlat (cons "tuna" seen))
-	)
-)
 
