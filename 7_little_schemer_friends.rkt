@@ -31,7 +31,7 @@
 
 
 (define (atom? x)
-	(not (list? x)))
+	(not (list? x)))(chips and fish fried or fish and fried)
 
 
 (define (print-type obj)
