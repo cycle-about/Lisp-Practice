@@ -21,7 +21,7 @@
 ;; from chapter 7
 (define build
 	(lambda (s1 s2)
-		(cons s1 (cons s2 '() ))     ; empty list used to initialize and empty list, for set2 to be added onto: lists are immutable, so need new list
+		(cons s1 (cons s2 '() ))		 ; empty list used to initialize and empty list, for set2 to be added onto: lists are immutable, so need new list
 	)
 )
 
@@ -41,8 +41,8 @@
 
 ;; made new for this chapter
 ;; equivalent version without lambda
-;;   (define (atom? x) (and (not (pair? x)) (not (null? x))))
-;;   (define atom? (lambda (x) (and (not (pair? x)) (not (null? x)))))
+;;	 (define (atom? x) (and (not (pair? x)) (not (null? x))))
+;;	 (define atom? (lambda (x) (and (not (pair? x)) (not (null? x)))))
 (define atom? 
 	(lambda (x) 
 		(and (not (pair? x)) (not (null? x))))
@@ -110,8 +110,8 @@
 ;; page 150 but used by function 2
 ;; sorn stands for symbol or number
 ;; behavior:
-;;   - if sorn is a number n, it looks up the nth element of lat (with pick) and recurses on that new value
-;;   - if sorn is a symbol, it stops and returns whether that symbol is eq? to a
+;;	 - if sorn is a number n, it looks up the nth element of lat (with pick) and recurses on that new value
+;;	 - if sorn is a symbol, it stops and returns whether that symbol is eq? to a
 ;; unnatural resursion because it does not 'consume' the list, instead jumps around within the entire list, and there is not a measure that decreases with each call
 ;; the recursion is not structurally decreasing, so how it behaves and whether it ever terminates depends on the pointers in it
 ;; natural recursion: follows shape of data and gets structurally smaller each iteration (for list recurse on cdr, for number recurse on sub1)
@@ -217,12 +217,12 @@
 )
 
 #| 
-(displayln (length* 'a))                       ; 1
-(displayln (length* '(a b)))                   ; 2
-(displayln (length* '((a b) c)))               ; 3
-(displayln (length* '(((a b) c) d)))           ; 4
-(displayln (length* '((a (b c)) (d e))))       ; 5
-(displayln (length* '((1 2) (3 4))))           ; 4
+(displayln (length* 'a))											 ; 1
+(displayln (length* '(a b)))									 ; 2
+(displayln (length* '((a b) c)))							 ; 3
+(displayln (length* '(((a b) c) d)))					 ; 4
+(displayln (length* '((a (b c)) (d e))))			 ; 5
+(displayln (length* '((1 2) (3 4))))					 ; 4
 |#
 
 ;; FUNCTION 7
@@ -241,12 +241,12 @@
 '(((a b) c) d) ))
 
 					 root
-					 /   \
-				node 		d  			d: 0 left turns, 2^0 = 1
+					 /	 \
+				node 		d				d: 0 left turns, 2^0 = 1
 				/		\
 		node		 c 					c: 1 left turn, 2^1 = 2
-    /  \ 								b: 2 left turns, 2^2 = 4
-   a    b 							a: 3 left turns, 2^3 = 8
+		/	\ 								b: 2 left turns, 2^2 = 4
+	 a		b 							a: 3 left turns, 2^3 = 8
  												TOTAL: 15
 
 
@@ -256,12 +256,12 @@ level 2 items: a, node (b c) | d, e
 level 3 items: b | c
 
 				root
-				/   \
-	    node  node
- 	   /  \     / \ 
-  	a  node  d   e
-			 /  \
-		 	b    c
+				/	 \
+			node	node
+ 		 /	\		 / \ 
+		a	node	d	 e
+			 /	\
+		 	b		c
 
 a: 2 left, 2^2 = 4
 b: 2 left, 2^2 = 4
@@ -270,13 +270,13 @@ d: 1 left, 2^1 = 2
 e: 0 left, 2^0 = 1
 TOTAL: 13
 
-(displayln (weight* 'a))                        ; 1
-(displayln (weight* '(a b) ))                   ; 3
-(displayln (weight* '(a (b c)) ))               ; 5
-(displayln (weight* '((a b) c) ))               ; 7
-(displayln (weight* '((1 2) (3 4)) ))           ; 9
-(displayln (weight* '((a (b c)) (d e)) ))       ; 13
-(displayln (weight* '(((a b) c) d) ))           ; 15
+(displayln (weight* 'a))												; 1
+(displayln (weight* '(a b) ))									 ; 3
+(displayln (weight* '(a (b c)) ))							 ; 5
+(displayln (weight* '((a b) c) ))							 ; 7
+(displayln (weight* '((1 2) (3 4)) ))					 ; 9
+(displayln (weight* '((a (b c)) (d e)) ))			 ; 13
+(displayln (weight* '(((a b) c) d) ))					 ; 15
 |#
 
 ;; FUNCTION 8
@@ -296,7 +296,7 @@ TOTAL: 13
 )
 
 ; (displayln (shuffle '(a (b c)) )) 		; (a (b c))
-; (displayln (shuffle '(a b) ))  				; (a b)
+; (displayln (shuffle '(a b) ))					; (a b)
 ; (displayln (shuffle '((a b) (c d)) )) ; infinite loop
 
 ;; FUNCTION 9
@@ -318,7 +318,7 @@ TOTAL: 13
 ; (displayln (C 0)) ; hangs
 ; (displayln (C 6)) ; 1
 
-;; FUNCTION 10
+;; FUNCTION 10, page 156
 ;; Ackermann function: total, computable, grows extremely fast, not primitve recursive
 ;; Not tail-recursive: the third clause nests a call inside another, causing very deep recursion
 ;; primitive recursive: those computable by for loops where the number of iterations is bounded in advance by the input 
@@ -338,7 +338,135 @@ TOTAL: 13
 ; (displayln (A 4 3)) ; hangs
 
 ;; FUNCTION 11
+;; the standard function length
+(define length
+	(lambda (l)
+		(cond
+			((null? l) 0)
+			(else (add1 (length (cdr l))))
+		)
+	)
+)
+
+; (displayln (length '(hello hi bye) )) ; 3
+
+;; FUNCTION 12
+;; determines length of empty list only, if passed non-empty list,
+;; this is NOT a total function, because there are inputs for which it is undefined
+;; so, not valid to (define ...) it
+
+#| 
+(displayln "function 12")
+((lambda (l)
+		(cond
+			((null? l) 0)
+			(else (add1 (eternity (cdr l))))
+		)
+	)
+	'()	; 0
+	; '(hello)	; hangs
+)
+|#
+
+;; FUNCTION 13, page 161
+;; function to get length of lists <=1, and including the function definition for length-0, because not valid to (define ...) it
+
+#| 
+(displayln "function 13")
+((lambda (l)
+		(cond
+			((null? l) 0)
+			(else (add1 ((lambda (l)
+				(cond
+					((null? l) 0)
+					(else (add1 (eternity (cdr l))))
+				)
+			)
+			(cdr l)
+			)))
+		)
+	)
+	; '()	; 0
+	; '(hello)	; 1
+	'(hello hi)	; hangs
+)
+|#
+
+
+;; FUNCTION 14, page 162
+;; creates length-0, receiving length as arg
+
+#|
+(((lambda (length)
+	(lambda (l)
+		(cond
+			((null? l) 0)
+			(else (add1 (length (cdr l)))))))
+	eternity)
+; '()	; 0
+'(hello)	; hangs
+)
+|#
+
+;; FUNCTION 15, page 163
+;; creates length-1 in same format as length-0 above, receiving length as arg
+;; nested functions
+
+#|
+(displayln "function 15")
+(
+	(
+		(lambda (f)
+			(lambda (l)
+				(cond
+					((null? l) 0)
+					(else (add1 (f (cdr l))))
+				)
+			)
+		)
+		(
+			(lambda (g) ; inner function, the arg to lambda (f)
+			 	(lambda (l)
+					(cond
+					 ((null? l) 0)
+					 (else (add1 (g (cdr l))))
+					)
+				)
+			)
+		eternity) ; arg passed to lambda g, which is called on cdr l in the 'else' block
+	)
+; '()  ; 0
+; '(hello)  ; 1
+'(hello hi)  ; hangs
+)
+|#
+
+;; FUNCTION 16
+;; name a function mk-length that can work for lists <= 1, takes length as an arg, and returns a function that looks like length
+
+(
+	(
+		(lambda (mk-length)
+			(mk-length (mk-length eternity))
+		)
+		(lambda (length)
+			(lambda (l)
+				(cond
+					((null? l) 0)
+					(else (add1 (length (cdr l))))
+				)
+			)
+		)
+	)
+'(hi) ; 1
+)
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; FUNCTION TBD, page 167
 ;; surprised this prints even without displayln
+#| 
 ;(displayln
 	(((lambda (mk-length) (mk-length mk-length))
 		(lambda (mk-length)
@@ -350,6 +478,7 @@ TOTAL: 13
 			)
 		)
 	)
-	'(apples)
+	'(apples)	; 1
 	)
 ;)
+|#
