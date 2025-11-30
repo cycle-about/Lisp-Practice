@@ -82,3 +82,45 @@
 
 (displayln (lookup-in-table 'entree t2 table-f)) ; boeuf
 (displayln (lookup-in-table 'entree t3 table-f)) ; spaghetti because searches the entries in order, returning first match
+
+;; FUNCTION 4
+
+(define rep-a 'a)
+(define rep-b 'b)
+(define rep-c 'c)
+
+(displayln
+	(cons rep-a
+		(cons rep-b
+			(cons rep-c '() )
+		)
+	)
+) ; (a b c)
+
+;; FUNCTION 5
+
+(define rep-car 'car)
+(define rep-quote 'quote)
+
+(cons rep-car
+	(cons 
+		(cons rep-quote
+			(cons
+				(cons rep-a
+					(cons rep-b
+						(cons rep-c 
+							(quote '() )
+						)
+					)
+				)
+				(quote '() )
+			)
+		)
+	(quote '() )
+	)
+)
+
+(displayln (quote (a b c)))
+; also expressions in the function
+;   '(car (quote (a b c . '()) . '()) . '())
+;   (a b c)
