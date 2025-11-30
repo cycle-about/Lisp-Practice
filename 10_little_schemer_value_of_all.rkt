@@ -41,8 +41,8 @@
 
 (define entry-f (lambda (name) 'not-found))
 
-(displayln (lookup-in-entry 'entree e1 entry-f)) ; tastes
-(displayln (lookup-in-entry 'hello e1 entry-f)) ; not-found
+; (displayln (lookup-in-entry 'entree e1 entry-f)) ; tastes
+; (displayln (lookup-in-entry 'hello e1 entry-f)) ; not-found
 
 ;; FUNCTION 3
 
@@ -80,8 +80,8 @@
 
 (define table-f (lambda (name) 'not-found-table))
 
-(displayln (lookup-in-table 'entree t2 table-f)) ; boeuf
-(displayln (lookup-in-table 'entree t3 table-f)) ; spaghetti because searches the entries in order, returning first match
+; (displayln (lookup-in-table 'entree t2 table-f)) ; boeuf
+; (displayln (lookup-in-table 'entree t3 table-f)) ; spaghetti because searches the entries in order, returning first match
 
 ;; FUNCTION 4
 
@@ -89,6 +89,7 @@
 (define rep-b 'b)
 (define rep-c 'c)
 
+#| 
 (displayln
 	(cons rep-a
 		(cons rep-b
@@ -96,31 +97,35 @@
 		)
 	)
 ) ; (a b c)
+|#
 
 ;; FUNCTION 5
 
-(define rep-car 'car)
-(define rep-quote 'quote)
+#|
+DATA TYPE 							BOOK 							RACKET
+atom 										sans serif 				single quote, eg 'a
+function  							italic 						n/a
+scheme special forms 		bold 							n/a
 
-(cons rep-car
-	(cons 
-		(cons rep-quote
-			(cons
-				(cons rep-a
-					(cons rep-b
-						(cons rep-c 
-							(quote '() )
-						)
-					)
-				)
-				(quote '() )
-			)
-		)
-	(quote '() )
-	)
-)
+value: a function that returns the natural value of expressions
+|#
 
-(displayln (quote (a b c)))
-; also expressions in the function
-;   '(car (quote (a b c . '()) . '()) . '())
-;   (a b c)
+(define rep-car 'car) ; an atom, because printed in sans serif
+(define rep-quote 'quote) ; an atom, because printed in sans serif
+
+;; implementation uses '() for the book's bolded special form "quote" followed by empty set, "quote ()"
+(displayln
+  (cons rep-car
+        (cons
+         (cons rep-quote
+               (cons
+                (cons rep-a
+                      (cons rep-b
+                            (cons rep-c '())))
+                '()))
+         '())))
+; this prints is an expression
+;   (car (quote (a b c)))
+
+;; FUNCTION 6
+; (displayln (value (car (quote (a b c)))))
