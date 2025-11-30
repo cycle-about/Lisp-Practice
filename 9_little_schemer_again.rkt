@@ -444,6 +444,7 @@ TOTAL: 13
 ;; FUNCTION 16
 ;; name a function mk-length that can work for lists <= 1, takes length as an arg, and returns a function that looks like length
 
+#|
 (
 	(
 		(lambda (mk-length)
@@ -460,25 +461,209 @@ TOTAL: 13
 	)
 '(hi) ; 1
 )
+|#
+
+;; FUNCTION 17
+;;
+
+#|
+(((lambda (mk-length) (mk-length mk-length))
+	(lambda (mk-length)
+		(lambda (l)
+			(cond
+				((null? l) 0)
+				(else (add1 ((mk-length eternity) (cdr l))))
+			)
+		)
+	)
+)
+; '(apples)	; 1
+'(apples oranges)	; hangs
+)
+|#
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; FUNCTION 18, page 167
+;; this is the function length, which adds recursive uses by passing mk-length to itself, just as it is about to expire
+;; but it no longer contains the function that looked like length
 
-;; FUNCTION TBD, page 167
-;; surprised this prints even without displayln
-#| 
-;(displayln
-	(((lambda (mk-length) (mk-length mk-length))
+#|
+(((lambda (mk-length) (mk-length mk-length))
+	(lambda (mk-length)
+		(lambda (l)
+			(cond
+				((null? l) 0)
+				; applying mk-length to itself could be extracted and called length
+				(else (add1 ((mk-length mk-length) (cdr l)))) 
+			)
+		)
+	)
+)
+; '(apples)	; 1
+; '(apples oranges)	; 2
+'(apples oranges pears)	; 3
+)
+|#
+
+
+;; FUNCTION 19, page 168, 'looks fine ... should be 1'
+;; revealed on 170 that it is an infinite loop
+;; (mk-length mk-length) is called with eager evaluation, and the args are evaluated before the function is called, so calls itself endlessly
+
+#|
+(displayln "function 19")
+(((lambda (mk-length)
+			(mk-length mk-length))
+	(lambda (mk-length)
+		((lambda (length)
+				(lambda (l)
+					(cond
+						((null? l) 0)
+						(else (add1 (length (cdr l)))))))
+		(mk-length mk-length)))) ; problem is here
+'(apples) ; hangs
+)
+|#
+
+
+;; FUNCTION 20
+;; replace (mk-length mk-length) with a different function
+
+#|
+(displayln "function 20")
+(((lambda (mk-length)
+			(mk-length mk-length))
+	(lambda (mk-length)
+		(lambda (l)  ; there used to be a call to 'length' before this 
+			(cond
+				((null? l) 0)
+				(else 
+					(add1 
+						(
+							(lambda (x)  ; unnamed function here in place of 'mk-length mk-length'
+								(
+									(mk-length mk-length)
+									x
+								)
+							)
+							(cdr l))))))))
+'(apples) ; 1
+)
+|#
+
+
+;; FUNCTION 21
+;; extract the function added in 20 and call it length
+#|
+(
+	((lambda (mk-length)
+				(mk-length mk-length))
 		(lambda (mk-length)
-			(lambda (l)
-				(cond
-					((null? l) 0)
-					(else (add1 ((mk-length mk-length) (cdr l))))
+			(
+				(lambda (length)  ; put back the call to length, removed in 20
+					(lambda (l)
+						(cond
+							((null? l) 0)
+							(else (add1 (length (cdr l))))
+						)
+					)
+				)
+				(lambda (x)
+					((mk-length mk-length) x)
 				)
 			)
 		)
 	)
-	'(apples)	; 1
-	)
-;)
+'(apples) ; 1
+)
 |#
+
+;; FUNCTION 22
+
+#|
+(
+(
+	(lambda (le)
+		((lambda (mk-length)
+			(mk-length mk-length))
+			(lambda (mk-length)
+				(le (lambda (x)
+					((mk-length mk-length) x)))))) ; last function in 21 moved to here
+	(lambda (length)
+		(lambda (l)
+			(cond
+				((null? l) 0)
+				(else (add1 (length (cdr l))))))))
+'(apples) ; 1
+)
+|#
+
+;; FUNCTION 23
+;; separate function that makes length from function that looks like length
+
+(displayln "function 23")
+
+(
+	(
+		(lambda (le)
+			(
+				(lambda (mk-length) (mk-length mk-length))
+					(lambda (mk-length)
+					(le (lambda (x)
+						((mk-length mk-length) x)
+						)
+					)
+				)
+			)
+		)
+			(lambda (length)
+				(lambda (l)
+					(cond
+						((null? l) 0)
+						(else (add1 (length (cdr l))))
+					)
+				)
+			)
+	)
+'(apples) ; 1
+)
+
+
+;; FUNCTION 24a
+;; re-introduce 'define ...'
+;; this is the applicative-order Y combinator: fixed-point combinator that works in call-by-value (eager) languages
+;; 
+
+(define Y
+	(lambda (le)
+		(
+			(lambda (f) (f f))
+			(lambda (f)
+				(le 
+					(lambda (x) 
+						((f f) x)
+					)
+				)
+			)
+		)
+	)
+)
+
+;; FUNCTION 24b
+;; use Y to build 'length'
+
+(displayln "function 24b")
+
+(define length-Y
+	(Y 
+		(lambda (length-Y)
+			(lambda (l)
+				(if (null? l) 0
+					(add1 (length-Y (cdr l)))
+				)
+			)
+		)
+	)
+)
+
+(length '(apples oranges grapes))
