@@ -2,8 +2,11 @@
 
 ;;;;;;;;;;;; HELPER FUNCTIONS ;;;;;;;;;;;;
 
-
-
+;; from chapter 9
+(define atom? 
+	(lambda (x) 
+		(and (not (pair? x)) (not (null? x))))
+)
 
 ;;;;;;;;;;;; END HELPER FUNCTIONS ;;;;;;;;;;;;
 
@@ -131,21 +134,143 @@ value: a function that returns the natural value of expressions
 ;; the implementations of value in chapter 6 are only able to handle arithmetic expressions and operators
 ;; instead of calling value, displayln seems to accomplish the expected answers from the book
 
+#|
 ;; FUNCTION 6
-;; quote is in bold so the scheme special form
+(displayln "function 6")
+;; quote is in bold so it means the scheme special form
 (displayln (car (quote (a b c))))   	; a     prints the value
 ; (car (quote (a b c)))   						; 'a    prints the atom, not the value
 
 ;; FUNCTION 7
-(define ex1 (car (quote (a b c)))) 		; quote is an atom
-; (displayln ex1) 											; a     value of exp, only the exp was given a name first
+(displayln "function 7")
+;; show the value of expression in function 6, after giving it a name
+;; quote in sans serif, so an atom
+;; does not work when try implementing as 'quote so might be result of book showing it in an assignment
+;; also does not work if try putting the list in '()
+(define ex1 (car (quote (a b c)))) 				; a 
+; (define ex1 (car ('quote (a b c)))) 		; ERROR: a: unbound identifier
+; (define ex1 (car ('quote (a b c)))) 		; ERROR: a: unbound identifier
+(displayln ex1)
+|#
 
 ;; FUNCTION 8
-(define ex2 (quote (car (quote '(a b c)))) ) 		; quote is an atom both times
-(displayln ex2) 																; (car (quote (a b c)))       the expression, not value
+(define ex2 (quote (car (quote '(a b c)))) )
+; (displayln ex2) 						; (car (quote (a b c)))       the expression, not value
 
 ;; FUNCTION 9
 (define ex3 (add1 6))
-(displayln ex3)  						; 7
+; (displayln ex3)  ; 7
 
 ;; FUNCTION 10
+(define ex4 6) 			
+; (displayln ex4) 	; 6
+
+;; FUNCTION 11
+(define ex5 (quote nothing))
+; (displayln ex5)   ; nothing
+
+;; FUNCTION 12
+(define ex6 
+	((lambda (nothing)
+		(cons nothing '() ) )
+		(quote (from nothing comes something))
+	)
+)
+; (displayln ex6) ; ((from nothing comes something))
+
+;; FUNCTION 13
+(define ex7
+	((lambda (nothing)
+		(cond
+			(nothing (quote something))
+			(else (quote nothing))))
+		#t)
+)
+; displayln ex7) ; something
+; changing last item to #f prints nothing
+
+
+;; FUNCTION 14
+;; racket is dynamically typed, and does not have a built-in type function
+;; types in the examples: *const, *quote, *identifier, *lambda, *cond, *application
+;; how to represent types: with functions, called 'actions'
+;; actions are functions that 'do the right thing' when applied to the appropriate type of expression
+;; value should find the type of expression passed, then use the associated action
+;; odd error during this: accidentally added an inline comment with a colon instead of semi-colon, throws unbound identifier, was difficult to see
+(define (list-to-action e)
+  (cond
+    [(atom? (car e))
+     (cond
+       [(eq? (car e) 'quote) '*quote]
+       [(eq? (car e) 'lambda) '*lambda]
+       [(eq? (car e) 'cond)   '*cond]
+       [else                  '*application])]
+    [else '*application]))
+
+(displayln "function 14")
+(displayln (list-to-action '(quote (a b))))   ; *quote
+(displayln (list-to-action '(lambda (x) x)))  ; *lambda
+(displayln (list-to-action '(cond (else 1)))) ; *cond
+(displayln (list-to-action '(car '(a b))))    ; *application
+(displayln (list-to-action '((lambda (x) x) 5))) ; *application
+(displayln (list-to-action '(f 1 2 3))) 			; *application
+
+;; FUNCTION 15
+(define atom-to-action
+	(lambda (e)
+		(cond
+			((number? e) '*const)
+			((eq? e #t) '*const)
+			((eq? e #f) '*const)
+			((eq? e 'cons) '*const)
+			((eq? e 'car) '*const)
+			((eq? e 'cdr) '*const)
+			((eq? e 'null?) '*const)
+			((eq? e 'eq?) '*const)
+			((eq? e 'atom?) '*const)
+			((eq? e 'zero?) '*const)
+			((eq? e 'add1) '*const)
+			((eq? e 'sub1) '*const)
+			((eq? e 'number?) '*const)
+			(else '*identifier)
+		)
+	)
+)
+
+(displayln "function 15")
+(displayln (atom-to-action 6)) ; *const
+(displayln (atom-to-action #f)) ; *const
+(displayln (atom-to-action 'car)) ; *const
+(displayln (atom-to-action 'x)) ; *identifier
+
+;; FUNCTION 16
+(define expression-to-action
+	(lambda (e)
+		(cond
+			((atom? e) (atom-to-action e))
+			(else (list-to-action e))
+		)
+	)
+)
+
+(displayln "function 16")
+(displayln (expression-to-action '(quote (a b)))) ; *quote
+(displayln (expression-to-action 'car)) ; *const
+
+;; FUNCTION 17
+(define meaning
+	(lambda (e table)
+		((expression-to-action e) e table)
+	)
+)
+
+;; FUNCTION 18
+;; the function value, together with all the functions it uses, is an interpreter
+(define value
+	(lambda (e)
+		(meaning e '() ) ; empty table
+	)
+)
+
+
+
