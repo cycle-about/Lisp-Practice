@@ -4,6 +4,7 @@
 
 
 
+
 ;;;;;;;;;;;; END HELPER FUNCTIONS ;;;;;;;;;;;;
 
 ;; entry: a pair of lists whose first list is a set, and the two lists are the same length
@@ -113,8 +114,8 @@ value: a function that returns the natural value of expressions
 (define rep-car 'car) ; an atom, because printed in sans serif
 (define rep-quote 'quote) ; an atom, because printed in sans serif
 
-;; implementation uses '() for the book's bolded special form "quote" followed by empty set, "quote ()"
-(displayln
+;; implementation uses '() for the book's bolded special form "quote ()"
+(define f5
   (cons rep-car
         (cons
          (cons rep-quote
@@ -124,8 +125,27 @@ value: a function that returns the natural value of expressions
                             (cons rep-c '())))
                 '()))
          '())))
-; this prints is an expression
-;   (car (quote (a b c)))
+
+; (displayln f5) ; (car (quote (a b c)))
+
+;; the implementations of value in chapter 6 are only able to handle arithmetic expressions and operators
+;; instead of calling value, displayln seems to accomplish the expected answers from the book
 
 ;; FUNCTION 6
-; (displayln (value (car (quote (a b c)))))
+;; quote is in bold so the scheme special form
+(displayln (car (quote (a b c))))   	; a     prints the value
+; (car (quote (a b c)))   						; 'a    prints the atom, not the value
+
+;; FUNCTION 7
+(define ex1 (car (quote (a b c)))) 		; quote is an atom
+; (displayln ex1) 											; a     value of exp, only the exp was given a name first
+
+;; FUNCTION 8
+(define ex2 (quote (car (quote '(a b c)))) ) 		; quote is an atom both times
+(displayln ex2) 																; (car (quote (a b c)))       the expression, not value
+
+;; FUNCTION 9
+(define ex3 (add1 6))
+(displayln ex3)  						; 7
+
+;; FUNCTION 10
