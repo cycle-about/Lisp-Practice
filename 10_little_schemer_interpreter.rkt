@@ -72,8 +72,8 @@
 	(lambda (e table)
 		(cond
 			((number? e) e)
-			((eq? e #t) #t)
-			((eq? e #f) #f)
+			((eq? e '#t) #t)
+			((eq? e '#f) #f)
 			(else (build 'primitive e))
 		)
 	)
@@ -83,8 +83,8 @@
 	(lambda (e)
 		(cond
 			((number? e) *const)
-			((eq? e #t) *const)
-			((eq? e #f) *const)
+			((eq? e '#t) *const)
+			((eq? e '#f) *const)
 			((eq? e 'cons) *const)
 			((eq? e 'car) *const)
 			((eq? e 'cdr) *const)
@@ -95,18 +95,10 @@
 			((eq? e 'add1) *const)
 			((eq? e 'sub1) *const)
 			((eq? e 'number?) *const)
-			(else '*identifier)
+			(else *identifier) ; this does not run, because it's not a procedure
 		)
 	)
 )
-
-#|
-(displayln "function 15")
-(displayln (atom-to-action 6)) 				; #<procedure:*const>
-(displayln (atom-to-action #f)) 			; #<procedure:*const>
-(displayln (atom-to-action 'car)) 		; #<procedure:*const>
-(displayln (atom-to-action 'x)) 			; *identifier
-|#
 
 (define text-of second)
 (define table-of first)
@@ -124,7 +116,6 @@
 		(car '() )
 	)
 )
-
 
 (define *identifier
 	(lambda (e table)
@@ -146,6 +137,9 @@
 	)
 )
 
+; p 184-5
+; handles "cond..."" blocks: read each line, if left part is false, look at rest of lines. Otherwise, answer the right part. else is treated as true
+; this does violate the First Commandment, since there is no check of "null? lines", so at least one of the questions needs to be true
 (define evcon
 	(lambda (lines table)
 		(cond
@@ -161,7 +155,7 @@
 (define else?
 	(lambda (x)
 		(cond
-			((atom? x) (eq? x ('else)))
+			((atom? x) (eq? x 'else))
 			(else #f)
 		)
 	)
@@ -169,7 +163,6 @@
 
 (define question-of first)
 (define answer-of second)
-
 
 (define (list-to-action e)
   (cond
@@ -179,9 +172,7 @@
        [(eq? (car e) 'lambda) *lambda]
        [(eq? (car e) 'cond)   *cond]
        [else                  *application])]
-    [else '*application]))
-
-
+    [else *application]))
 
 (define expression-to-action
 	(lambda (e)
@@ -192,13 +183,11 @@
 	)
 )
 
-
 (define meaning
 	(lambda (e table)
 		((expression-to-action e) e table)
 	)
 )
-
 
 (define value
 	(lambda (e)
@@ -206,6 +195,9 @@
 	)
 )
 
+; p 186
+; takes a list of (representations of) arguments, and a table
+; returns a list composed of the meaning of each argument
 (define evlis
 	(lambda (args table)
 		(cond
@@ -215,9 +207,12 @@
 	)
 )
 
-(define function-of car)
-(define arguments-of cdr)
+(define function-of car) ; p 187
+(define arguments-of cdr) ; p 187
 
+; p 186
+; An application is a list of expressions whose car position contains an expression whose value is a function
+; it must always determine the meaning of all its arguments
 (define *application
 	(lambda (e table)
 		(apply
@@ -227,12 +222,14 @@
 	)
 )
 
+; we know what primitives functions do (p 184)
 (define primitive?
 	(lambda (l)
 		(eq? (first l) 'primitive)
 	)
 )
 
+; non-primitive functions are defined by their arguments and function bodies, need those two things to use it (p 184)
 (define non-primitive?
 	(lambda (l)
 		(eq? (first l) 'non-primitive)
@@ -278,6 +275,10 @@
 	)
 )
 
+; p 188-9
+; this function must extend the table
+; a closure is a non-primitive function
+; applying a non-primitive function (a closure) to a list of values is the same as finding the meaning of the closure's body with its table extended by an entry in the form "(formals values)". In this entry, formals is the formals of the closure and values is the result of evlis
 (define apply-closure
 	(lambda (closure vals)
 		(meaning (body-of closure)
@@ -289,7 +290,76 @@
 	)
 )
 
-;; page 184
-(define ex8 '(lambda (x) (cons x y))) ; quote things intended for the interpreter to process
-(define t4 '(((y z) ((8) 9))))
-(displayln (meaning ex8 t4))  ; (non-primitive ((((y z) ((8) 9))) (x) (cons x y)))
+;; p 184
+;; (define e1 '(lambda (x) (cons x y))) ; quote statements to be sent to the interpreter to process, rather than being executed
+;; (define t1 '(((y z) ((8) 9))))
+; (displayln (meaning e1 t1))  ; (non-primitive ((((y z) ((8) 9))) (x) (cons x y)))
+
+;; p 185
+(define e2 '(
+	cond 
+		(coffee klatsch) 
+		(else party)
+))
+
+(define t2 '(
+	((coffee) (#t)) 
+	((klatsch party) 
+	(5 (6)))
+))
+
+; (displayln (*cond e2 t2)) ; 5
+
+;; p 189
+(define c '(
+	(
+		((u v w) (1 2 3))
+		((x y z) (4 5 6))
+	)
+	(x y)
+	(cons z x)
+))
+
+(define v1 '(
+	(a b c)
+	(d e f)
+))
+
+; (displayln (apply-closure c v1)) ; (6 a b c)
+
+;; p 189
+(define e3 '(cons z x))
+(define t3 '(
+	((x y) ((a b c) (d e f))) 
+	((u v w) (1 2 3)) 
+	((x y z) (4 5 6))
+))
+; (displayln (meaning e3 t3)) ; (6 a b c)
+
+;; p 190
+(define z 6)
+(define x '(a b c))
+; (displayln (cons z x)) ; (6 a b c)
+
+;; p 190
+(define a '(z x))
+(displayln (evlis a t3)) ; (6 (a b c))
+
+; that comes from these pieces, because evlis returns a list of meanings
+(define e4 'z)
+(displayln (meaning e4 t3)) ; 6
+(define e5 'x)
+(displayln (meaning e5 t3)) ; (a b c)
+
+;; p 190
+(define e6 'cons)
+(displayln (meaning e6 t3)) ; (primitive cons)
+
+;; p 191
+(define f '(primitive cons))
+(define v2 '(6 (a b c)))
+(displayln (apply f v2)) ; (6 a b c)
+
+;; p 191
+(define n 'cons)
+(displayln (apply-primitive n v2)); (6 a b c)
